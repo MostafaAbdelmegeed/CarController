@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="400dp"
+                android:background="@android:color/transparent" />
+
+
+            <ImageButton
+                android:id="@+id/disconnected"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:backgroundTint="@android:color/transparent"
+                android:scaleType="fitCenter"
+                android:tint="@android:color/darker_gray"
+                app:srcCompat="@drawable/baseline_portable_wifi_off_black_48" />
+
+            <TextView
+                android:id="@+id/auto_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@android:color/darker_gray"
+                android:text="Auto Pilot: OFF"
+                android:paddingLeft="6dp"
+                android:paddingRight="6dp"
+                android:paddingBottom="4dp"
+                android:paddingTop="4dp"
+                android:visibility="invisible"
+                android:textColor="@android:color/white" />
+
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp">
+
+
+            <ImageButton
+                android:id="@+id/power"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:scaleType="fitCenter"
+                android:tint="@android:color/holo_red_light"
+                app:srcCompat="@android:drawable/ic_lock_power_off" />
+
+            <ImageButton
+                android:id="@+id/auto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:scaleType="fitCenter"
+                android:clickable="false"
+                android:alpha="0.2"
+                android:tint="@android:color/holo_orange_light"
+                app:srcCompat="@drawable/baseline_android_black_24" />
+
+            <TextView
+                android:id="@+id/rfid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:background="#6589FF00"
+                android:fontFamily="sans-serif-smallcaps"
+                android:padding="8dp"
+                android:text="RFID"
+                android:textColor="@color/common_google_signin_btn_text_light_default"
+                android:textSize="16sp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/keypad">
+
+
+            <ImageButton
+                android:id="@+id/forward"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:layout_above="@+id/compass"
+                android:clickable="false"
+                android:alpha="0.2"
+                app:srcCompat="@drawable/baseline_keyboard_arrow_up_black_48" />
+
+            <ImageButton
+                android:id="@+id/right"
+                android:layout_toRightOf="@+id/compass"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:clickable="false"
+                android:alpha="0.2"
+                android:layout_centerInParent="true"
+                app:srcCompat="@drawable/baseline_keyboard_arrow_right_black_48" />
+
+            <ImageButton
+                android:id="@+id/reverse"
+                android:layout_below="@+id/compass"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:clickable="false"
+                android:alpha="0.2"
+                app:srcCompat="@drawable/baseline_keyboard_arrow_down_black_48" />
+
+            <ImageButton
+                android:id="@+id/left"
+                android:layout_toLeftOf="@+id/compass"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:clickable="false"
+                android:alpha="0.2"
+                app:srcCompat="@drawable/baseline_keyboard_arrow_left_black_48" />
+
+            <ImageButton
+                android:id="@+id/compass"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerInParent="true"
+                android:visibility="invisible"
+                android:backgroundTint="@android:color/transparent"
+                android:clickable="false"
+                android:tint="@android:color/holo_orange_light"
+                app:srcCompat="@android:drawable/ic_menu_compass" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

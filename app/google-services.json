@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "987126273841",
+    "firebase_url": "https://carcontroller-76535.firebaseio.com",
+    "project_id": "carcontroller-76535",
+    "storage_bucket": "carcontroller-76535.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987126273841:android:70f665218c119f8d454210",
+        "android_client_info": {
+          "package_name": "com.example.carcontroller_ver10"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "987126273841-bi3ts7mdrhsm9r1khtashrmv6ht07774.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.carcontroller_ver10",
+            "certificate_hash": "44814eb293380c9ff04158fe79df2e8d62062f61"
+          }
+        },
+        {
+          "client_id": "987126273841-kmes0049mogf99ortdd1980lc4jnf5d8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZKWC7y2JxEATWmkXqBXgZv9ZD-vLvvis"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "987126273841-kmes0049mogf99ortdd1980lc4jnf5d8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
