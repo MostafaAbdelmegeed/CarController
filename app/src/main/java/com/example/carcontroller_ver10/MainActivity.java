@@ -1,6 +1,7 @@
 package com.example.carcontroller_ver10;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -96,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
         rfid = findViewById(R.id.rfid);
 
         enableBT();
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, new IntentFilter("incomingMessage"));
+
 
         powerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -273,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             String text = intent.getStringExtra("theMessage");
             messages.replace(0, 0, text);
             RFID_reading = Integer.parseInt(messages.toString());
