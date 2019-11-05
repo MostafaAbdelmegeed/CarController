@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private int RFID_reading;
 
+
     private final int  FORWARD = 8;
     private final int  RIGHT = 6;
     private final int  REVERSE = 2;
@@ -180,7 +181,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void move(int direction){
-        bluetoothConnectionService.write(direction);
+        switch (direction) {
+            case FORWARD:
+                bluetoothConnectionService.write("F");
+                break;
+            case RIGHT:
+                bluetoothConnectionService.write("R");
+                break;
+            case LEFT:
+                bluetoothConnectionService.write("L");
+                break;
+            case REVERSE:
+                bluetoothConnectionService.write("B");
+                break;
+        }
     }
 
 
@@ -242,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
     private void stopTheCar() {
         Log.d(TAG, "stopTheCar: Stopping the car!");
         switchToRemoteControlMode();
-        bluetoothConnectionService.write(STOP);
+        bluetoothConnectionService.write("S");
         turnOffButtons();
         POWER_ON = false;
     }
@@ -250,14 +264,14 @@ public class MainActivity extends AppCompatActivity {
     private void switchToAutoPilotMode() {
         indicator.setText("Auto Pilot: ON");
         AUTO_PILOT = true;
-        bluetoothConnectionService.write(AUTO_PILOT_MODE);
+        bluetoothConnectionService.write("A");
         turnOffKeypad();
     }
 
     private void switchToRemoteControlMode() {
         indicator.setText("Auto Pilot: OFF");
         AUTO_PILOT = false;
-        bluetoothConnectionService.write(REMOTE_CONTROLLED_MODE);
+        bluetoothConnectionService.write("C");
         turnOnKeypad();
     }
 
@@ -279,9 +293,8 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
 
             String text = intent.getStringExtra("theMessage");
-            messages.replace(0, 0, text);
-            RFID_reading = Integer.parseInt(messages.toString());
-            rfid.setText(RFID_reading);
+            messages.replace(0, text.length(), text);
+            rfid.setText(messages.toString());
             Log.d(TAG, "Incoming : " + text);
         }
     };

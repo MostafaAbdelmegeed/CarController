@@ -200,6 +200,13 @@ public class BluetoothConnectionService {
         mConnectedThread.write(out);
     }
 
+    public void write(String data){
+        byte[] out = data.getBytes();
+        Log.d(TAG, "write: Writing to outputstream: " + data);
+        mConnectedThread.write(out);
+
+    }
+
     public void cancel(){
         mConnectedThread.cancel();
     }
