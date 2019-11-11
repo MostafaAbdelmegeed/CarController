@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private static final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     public static StringBuilder messages = new StringBuilder();
 
-    BluetoothConnectionService bluetoothConnectionService;
+    public static BluetoothConnectionService bluetoothConnectionService;
     public static final int AUTO_PILOT_MODE = 1;
     public static final int REMOTE_CONTROLLED_MODE = 0;
 
@@ -107,9 +107,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (!POWER_ON) {
                     if(!CONNECTED){startCarBluetoothDevice();}
-                    startTheCar();
                 } else {
-                    stopTheCar();
                     if(CONNECTED){stopCarBluetoothDevice();}
                 }
             }
@@ -127,35 +125,53 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        forwardBtn.setOnTouchListener(new RepeatListener(400, 100, new View.OnClickListener() {
+        forwardBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                move(FORWARD);
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    move(FORWARD);
+                } else if(event.getAction() == MotionEvent.ACTION_UP){
+                    move(STOP);
+                }
+                return false;
             }
-        }));
+        });
 
-
-        rightBtn.setOnTouchListener(new RepeatListener(400, 100, new View.OnClickListener() {
+        rightBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                move(RIGHT);
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    move(RIGHT);
+                } else if(event.getAction() == MotionEvent.ACTION_UP){
+                    move(STOP);
+                }
+                return false;
             }
-        }));
+        });
 
-        reverseBtn.setOnTouchListener(new RepeatListener(400, 100, new View.OnClickListener() {
+        reverseBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                move(REVERSE);
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    move(REVERSE);
+                } else if(event.getAction() == MotionEvent.ACTION_UP){
+                    move(STOP);
+                }
+                return false;
             }
-        }));
+        });
 
-
-        leftBtn.setOnTouchListener(new RepeatListener(400, 100, new View.OnClickListener() {
+        leftBtn.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
-                move(LEFT);
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() == MotionEvent.ACTION_DOWN){
+                    move(LEFT);
+                } else if(event.getAction() == MotionEvent.ACTION_UP){
+                    move(STOP);
+                }
+                return false;
             }
-        }));
+        });
 
     }
 
@@ -166,10 +182,9 @@ public class MainActivity extends AppCompatActivity {
     private void startCarBluetoothDevice() {
         mBTDevice = bluetoothAdapter.getRemoteDevice(CAR_MAC_ADDRESS);
         bluetoothAdapter.cancelDiscovery();
-        bluetoothConnectionService = new BluetoothConnectionService(this.getApplicationContext());
+        bluetoothConnectionService = new BluetoothConnectionService(this.getApplicationContext(), this);
         bluetoothConnectionService.startClient(mBTDevice, MY_UUID_INSECURE);
         CONNECTED = true;
-        toastForMe("Connected!");
     }
 
 
@@ -193,6 +208,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case REVERSE:
                 bluetoothConnectionService.write("B");
+                break;
+            case STOP:
+                bluetoothConnectionService.write("S");
                 break;
         }
     }
@@ -253,7 +271,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void stopTheCar() {
+    public void stopTheCar() {
         Log.d(TAG, "stopTheCar: Stopping the car!");
         switchToRemoteControlMode();
         bluetoothConnectionService.write("S");
@@ -275,13 +293,13 @@ public class MainActivity extends AppCompatActivity {
         turnOnKeypad();
     }
 
-    private void toastForMe(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
+    public void toastForMe(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
         Log.d(TAG, "toastForMe: Toast thrown for you!");
     }
 
 
-    private void startTheCar() {
+    public void startTheCar() {
         Log.d(TAG, "startTheCar: Starting the car!");
         turnOnButtons();
         POWER_ON = true;
@@ -291,10 +309,9 @@ public class MainActivity extends AppCompatActivity {
     BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             String text = intent.getStringExtra("theMessage");
-            messages.replace(0, text.length(), text);
-            rfid.setText(messages.toString());
+            text.trim();
+            rfid.setText(text);
             Log.d(TAG, "Incoming : " + text);
         }
     };

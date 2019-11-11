@@ -27,11 +27,30 @@ public class BluetoothConnectionService {
     private static final UUID MY_UUID_INSECURE= UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private UUID deviceUUID;
     private ConnectedThread mConnectedThread;
+    private ProgressDialog progressDialog;
+    private MainActivity mainActivity;
 
 
 
-    public BluetoothConnectionService(Context context ) {
+    public BluetoothConnectionService(Context context, MainActivity ma ) {
+        progressDialog = new ProgressDialog(ma);
+        setupProgressDialog();
+        mainActivity = ma;
         mContext = context;
+    }
+
+    private void setupProgressDialog(){
+        // Setting Title
+        progressDialog.setTitle("Bluetooth Connection");
+        // Setting Message
+        progressDialog.setMessage("Attempting to connect...");
+        // Progress Dialog Style Horizontal
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        // Progress Dialog Max Value
+        progressDialog.setMax(100);
+
+        progressDialog.show();
+        progressDialog.setCancelable(false);
     }
 
 
@@ -41,6 +60,8 @@ public class BluetoothConnectionService {
         Log.d(TAG, "startClient: Started...");
 
         mConnectThread = new ConnectThread(device, uuid);
+        progressDialog.incrementProgressBy(10);
+        progressDialog.setMessage("Starting Connection");
         mConnectThread.start();
     }
 
@@ -81,20 +102,29 @@ public class BluetoothConnectionService {
                 // This is a blocking call and will only return on a
                 // successful connection or an exception
                 mmSocket.connect();
-
                 Log.d(TAG, "run: ConnectThread connected.");
+                progressDialog.incrementProgressBy(50);
+                progressDialog.setMessage("Opening a Socket");
+                connected(mmSocket);
             } catch (IOException e) {
                 // Close the socket
                 try {
                     mmSocket.close();
                     Log.d(TAG, "run: Closed Socket.");
+                    progressDialog.setMessage("Couldn't Connect to the Car, try again");
+                    try {
+                        Thread.sleep(1000);
+                        progressDialog.dismiss();
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 } catch (IOException e1) {
                     Log.e(TAG, "mConnectThread: run: Unable to close connection in socket " + e1.getMessage());
                 }
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
             }
 
-            connected(mmSocket,mmDevice);
+
         }
         public void cancel() {
             try {
@@ -126,6 +156,10 @@ public class BluetoothConnectionService {
                 tmpIn = mmSocket.getInputStream();
                 tmpOut = mmSocket.getOutputStream();
                 Log.d(TAG,"temp sockets created successfully");
+                progressDialog.incrementProgressBy(40);
+                progressDialog.setMessage("Connected Successfully!");
+                mainActivity.startTheCar();
+                progressDialog.dismiss();
             } catch (IOException e) {
                 Log.e(TAG,"temp sockets not created", e);
             }
@@ -136,7 +170,6 @@ public class BluetoothConnectionService {
 
         public void run(){
             byte[] buffer = new byte[1024];  // buffer store for the stream
-            //List<Patient> data;
             int bytes; // bytes returned from read()
             // Keep listening to the InputStream until an exception occurs
             while (true) {
@@ -147,14 +180,9 @@ public class BluetoothConnectionService {
                     incomingMessage.trim();
                     if (!incomingMessage.isEmpty()) {
                         Log.d(TAG, "InputStream: " + incomingMessage);
-
                         Intent incomingMessageIntent = new Intent("incomingMessage");
                         incomingMessageIntent.putExtra("theMessage", incomingMessage);
                         LocalBroadcastManager.getInstance(mContext).sendBroadcast(incomingMessageIntent);
-
-                        //data = new ArrayList<>();
-                        //data.add(new Patient(R.drawable.asset_0, "Mustafa As'ad", 1, 21, 80, 75, incomingMessage, 125, "+201028771928", "El Manial / EL Roda"));
-                        //Main2Activity.setPatients(data);
                     }
                 } catch (IOException e) {
                     Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
@@ -180,7 +208,7 @@ public class BluetoothConnectionService {
         }
     }
 
-    private void connected(BluetoothSocket mmSocket, BluetoothDevice mmDevice) {
+    private void connected(BluetoothSocket mmSocket) {
         Log.d(TAG, "connected: Starting.");
 
         // Start the thread to manage the connection and perform transmissions
@@ -192,23 +220,29 @@ public class BluetoothConnectionService {
      * Write to the ConnectedThread in an unsynchronized manner
      */
     public void write(int mode) {
-        // Create temporary object
-        byte[] out = ByteBuffer.allocate(4).putInt(mode).array();
-        // Synchronize a copy of the ConnectedThread
-        Log.d(TAG, "write: Writing to outputstream: " + mode);
-        //perform the write
-        mConnectedThread.write(out);
+        if(MainActivity.bluetoothConnectionService != null) {
+            // Create temporary object
+            byte[] out = ByteBuffer.allocate(4).putInt(mode).array();
+            // Synchronize a copy of the ConnectedThread
+            Log.d(TAG, "write: Writing to outputstream: " + mode);
+            //perform the write
+            mConnectedThread.write(out);
+        }
     }
 
     public void write(String data){
-        byte[] out = data.getBytes();
-        Log.d(TAG, "write: Writing to outputstream: " + data);
-        mConnectedThread.write(out);
-
+        if(MainActivity.bluetoothConnectionService != null) {
+            byte[] out = data.getBytes();
+            Log.d(TAG, "write: Writing to outputstream: " + data);
+            mConnectedThread.write(out);
+        }
     }
 
     public void cancel(){
-        mConnectedThread.cancel();
+        if( MainActivity.bluetoothConnectionService != null) {
+            mConnectedThread.cancel();
+            mainActivity.stopTheCar();
+        }
     }
 
 }
