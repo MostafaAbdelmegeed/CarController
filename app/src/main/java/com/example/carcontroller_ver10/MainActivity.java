@@ -1,5 +1,6 @@
 package com.example.carcontroller_ver10;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -9,37 +10,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.drm.DrmStore;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.util.LruCache;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.ImageRequest;
-import com.android.volley.toolbox.Volley;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.ByteArrayOutputStream;
-import java.util.EventListener;
-import java.util.FormatFlagsConversionMismatchException;
 import java.util.UUID;
 
 
@@ -50,19 +35,20 @@ public class MainActivity extends AppCompatActivity {
     private boolean POWER_ON = false;
     private boolean AUTO_PILOT = false;
 
-
+    private StringBuffer stringBuffer = new StringBuffer();
     private ImageButton forwardBtn;
     private ImageButton rightBtn;
     private ImageButton reverseBtn;
     private ImageButton leftBtn;
     private ImageButton powerBtn;
     private ImageButton autoBtn;
+    private ImageButton bluetoothBtn;
+
+    private ImageView connectedOrb;
+    private ImageView disconnectedOrb;
 
     private TextView indicator;
     private TextView rfid;
-
-    private int RFID_reading;
-
 
     private final int  FORWARD = 8;
     private final int  RIGHT = 6;
@@ -73,14 +59,18 @@ public class MainActivity extends AppCompatActivity {
 
     public BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     public static boolean CONNECTED = false;
-    public static final String CAR_MAC_ADDRESS = "98:D3:A1:FD:4B:1E";
+    public static String CAR_MAC_ADDRESS;
     public BluetoothDevice mBTDevice;
     private static final UUID MY_UUID_INSECURE = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    public static StringBuilder messages = new StringBuilder();
 
-    public static BluetoothConnectionService bluetoothConnectionService;
-    public static final int AUTO_PILOT_MODE = 1;
-    public static final int REMOTE_CONTROLLED_MODE = 0;
+    public static BluetoothConnectionService BLUETOOTH_CONNECTION_SERVICE;
+
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference forward = database.getReference("SteeringWheel").child("forward");
+    DatabaseReference right = database.getReference("SteeringWheel").child("right");
+    DatabaseReference reverse = database.getReference("SteeringWheel").child("reverse");
+    DatabaseReference left = database.getReference("SteeringWheel").child("left");
+
 
 
     @Override
@@ -94,8 +84,11 @@ public class MainActivity extends AppCompatActivity {
         leftBtn = findViewById(R.id.left);
         powerBtn = findViewById(R.id.power);
         autoBtn = findViewById(R.id.auto);
+        bluetoothBtn = findViewById(R.id.bluetooth);
         indicator = findViewById(R.id.auto_indicator);
         rfid = findViewById(R.id.rfid);
+        connectedOrb = findViewById(R.id.connectedORb);
+        disconnectedOrb = findViewById(R.id.disconnectedOrb);
 
         enableBT();
 
@@ -106,9 +99,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!POWER_ON) {
-                    if(!CONNECTED){startCarBluetoothDevice();}
+                    if(!CONNECTED){
+                        startCarBluetoothDevice();
+                        startTheCar();
+                    }
                 } else {
-                    if(CONNECTED){stopCarBluetoothDevice();}
+                    if(CONNECTED){
+                        stopCarBluetoothDevice();
+                        stopTheCar();
+                    }
+                }
+            }
+        });
+
+        bluetoothBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(CONNECTED){
+                    stopCarBluetoothDevice();
+                    toastForMe("Disconnected");
+                } else if(!CONNECTED){
+                    startCarBluetoothDevice();
                 }
             }
         });
@@ -173,44 +184,139 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        /* ---------------------------------------------- SteeringWheel ------------------------------------*/
+
+        forward.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(CONNECTED) {
+                    if (dataSnapshot.getValue(int.class) > 0) {
+                        move(FORWARD);
+                    } else if (dataSnapshot.getValue(int.class) == 0) {
+                        move(STOP);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+            }
+        });
+
+        right.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(CONNECTED) {
+                    if (dataSnapshot.getValue(int.class) > 0) {
+                        move(RIGHT);
+                    } else if (dataSnapshot.getValue(int.class) == 0) {
+                        move(STOP);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+            }
+        });
+
+        reverse.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(CONNECTED) {
+                    if (dataSnapshot.getValue(int.class) > 0) {
+                        move(REVERSE);
+                    } else if (dataSnapshot.getValue(int.class) == 0) {
+                        move(STOP);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+            }
+        });
+
+        left.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(CONNECTED) {
+                    if (dataSnapshot.getValue(int.class) > 0) {
+                        move(LEFT);
+                    } else if (dataSnapshot.getValue(int.class) == 0) {
+                        move(STOP);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", databaseError.toException());
+            }
+        });
+
+        /* -------------------------------------------------------------------------------------------------*/
+
     }
+
+
 
 
     /* ----------------------------------------------------- Methods --------------------------------------*/
 
 
     private void startCarBluetoothDevice() {
-        mBTDevice = bluetoothAdapter.getRemoteDevice(CAR_MAC_ADDRESS);
+
+        for (BluetoothDevice bluetoothDevice: bluetoothAdapter.getBondedDevices()
+             ) {
+            CAR_MAC_ADDRESS = bluetoothDevice.getAddress();
+            mBTDevice = bluetoothDevice;
+        }
         bluetoothAdapter.cancelDiscovery();
-        bluetoothConnectionService = new BluetoothConnectionService(this.getApplicationContext(), this);
-        bluetoothConnectionService.startClient(mBTDevice, MY_UUID_INSECURE);
-        CONNECTED = true;
+        BLUETOOTH_CONNECTION_SERVICE = new BluetoothConnectionService(this.getApplicationContext(), this);
+        BLUETOOTH_CONNECTION_SERVICE.startClient(mBTDevice, MY_UUID_INSECURE);
+        if(CONNECTED){
+            connectedOrb.setVisibility(View.VISIBLE);
+            disconnectedOrb.setVisibility(View.INVISIBLE);
+        }
     }
 
 
     private void stopCarBluetoothDevice() {
         if (bluetoothAdapter != null) {
-            bluetoothConnectionService.cancel();
-            CONNECTED = false;
+            BLUETOOTH_CONNECTION_SERVICE.cancel();
+        }
+
+        if (!CONNECTED){
+            connectedOrb.setVisibility(View.INVISIBLE);
+            disconnectedOrb.setVisibility(View.VISIBLE);
         }
     }
 
     private void move(int direction){
         switch (direction) {
             case FORWARD:
-                bluetoothConnectionService.write("F");
+                BLUETOOTH_CONNECTION_SERVICE.write("F");
                 break;
             case RIGHT:
-                bluetoothConnectionService.write("R");
+                BLUETOOTH_CONNECTION_SERVICE.write("R");
                 break;
             case LEFT:
-                bluetoothConnectionService.write("L");
+                BLUETOOTH_CONNECTION_SERVICE.write("L");
                 break;
             case REVERSE:
-                bluetoothConnectionService.write("B");
+                BLUETOOTH_CONNECTION_SERVICE.write("B");
                 break;
             case STOP:
-                bluetoothConnectionService.write("S");
+                BLUETOOTH_CONNECTION_SERVICE.write("S");
                 break;
         }
     }
@@ -228,6 +334,8 @@ public class MainActivity extends AppCompatActivity {
         leftBtn.setAlpha(1.f);
         autoBtn.setClickable(true);
         autoBtn.setAlpha(1.f);
+        bluetoothBtn.setClickable(true);
+        bluetoothBtn.setAlpha(1.f);
         indicator.setVisibility(View.VISIBLE);
     }
 
@@ -243,6 +351,8 @@ public class MainActivity extends AppCompatActivity {
         leftBtn.setAlpha(0.2f);
         autoBtn.setClickable(false);
         autoBtn.setAlpha(0.2f);
+        bluetoothBtn.setClickable(false);
+        bluetoothBtn.setAlpha(0.2f);
         indicator.setVisibility(View.INVISIBLE);
     }
 
@@ -274,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
     public void stopTheCar() {
         Log.d(TAG, "stopTheCar: Stopping the car!");
         switchToRemoteControlMode();
-        bluetoothConnectionService.write("S");
+        BLUETOOTH_CONNECTION_SERVICE.write("S");
         turnOffButtons();
         POWER_ON = false;
     }
@@ -282,14 +392,14 @@ public class MainActivity extends AppCompatActivity {
     private void switchToAutoPilotMode() {
         indicator.setText("Auto Pilot: ON");
         AUTO_PILOT = true;
-        bluetoothConnectionService.write("A");
+        BLUETOOTH_CONNECTION_SERVICE.write("A");
         turnOffKeypad();
     }
 
     private void switchToRemoteControlMode() {
         indicator.setText("Auto Pilot: OFF");
         AUTO_PILOT = false;
-        bluetoothConnectionService.write("C");
+        BLUETOOTH_CONNECTION_SERVICE.write("C");
         turnOnKeypad();
     }
 
@@ -311,7 +421,11 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String text = intent.getStringExtra("theMessage");
             text.trim();
-            rfid.setText(text);
+            stringBuffer.append(text);
+            if(stringBuffer.length() >= 10) {
+                rfid.setText(stringBuffer.toString());
+                stringBuffer.delete(0, stringBuffer.length());
+            }
             Log.d(TAG, "Incoming : " + text);
         }
     };
@@ -337,18 +451,24 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (POWER_ON)
             stopTheCar();
-        if (bluetoothConnectionService != null)
+        if (BLUETOOTH_CONNECTION_SERVICE != null)
         stopCarBluetoothDevice();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (POWER_ON)
+        if (POWER_ON && BLUETOOTH_CONNECTION_SERVICE != null)
             stopTheCar();
     }
 
-
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (CONNECTED) {
+            startTheCar();
+        }
+    }
 }
 
 

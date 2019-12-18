@@ -19,7 +19,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="match_parent"
                 android:layout_height="400dp"
-                android:background="@android:color/transparent" />
+                android:background="@android:color/black" />
 
 
             <ImageButton
@@ -29,7 +29,7 @@
                 android:layout_centerInParent="true"
                 android:backgroundTint="@android:color/transparent"
                 android:scaleType="fitCenter"
-                android:tint="@android:color/darker_gray"
+                android:tint="@android:color/white"
                 app:srcCompat="@drawable/baseline_portable_wifi_off_black_48" />
 
             <TextView
@@ -42,7 +42,6 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginBottom="20dp"
-                android:background="@android:color/darker_gray"
                 android:text="Auto Pilot: OFF"
                 android:paddingLeft="6dp"
                 android:paddingRight="6dp"
@@ -51,12 +50,29 @@
                 android:visibility="invisible"
                 android:textColor="@android:color/white" />
 
+            <ImageView
+                android:id="@+id/connectedORb"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="20dp"
+                android:visibility="invisible"
+                app:srcCompat="@drawable/green_online_icon" />
+
+            <ImageView
+                android:id="@+id/disconnectedOrb"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginTop="20dp"
+                app:srcCompat="@drawable/red_icon_offline" />
+
 
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_marginTop="10dp"
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
@@ -65,7 +81,7 @@
             <ImageButton
                 android:id="@+id/power"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_height="match_parent"
                 android:layout_alignParentStart="true"
                 android:scaleType="fitCenter"
                 android:tint="@android:color/holo_red_light"
@@ -74,7 +90,7 @@
             <ImageButton
                 android:id="@+id/auto"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_height="match_parent"
                 android:layout_alignParentEnd="true"
                 android:scaleType="fitCenter"
                 android:clickable="false"
@@ -84,15 +100,25 @@
 
             <TextView
                 android:id="@+id/rfid"
-                android:layout_width="200dp"
-                android:layout_height="40dp"
+                android:layout_width="160dp"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
                 android:gravity="center"
-                android:layout_centerInParent="true"
                 android:background="#6589FF00"
                 android:fontFamily="sans-serif-smallcaps"
-                android:text="RFID"
+                android:layout_centerInParent="true"
                 android:textColor="@color/common_google_signin_btn_text_light_default"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/bluetooth"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_toRightOf="@+id/power"
+                android:clickable="false"
+                android:alpha="0.2"
+                android:tint="#2196F3"
+                app:srcCompat="@android:drawable/stat_sys_data_bluetooth" />
 
         </RelativeLayout>
 

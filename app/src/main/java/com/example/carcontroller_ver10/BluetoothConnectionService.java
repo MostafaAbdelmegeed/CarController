@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.UUID;
 
 
@@ -44,10 +43,6 @@ public class BluetoothConnectionService {
         progressDialog.setTitle("Bluetooth Connection");
         // Setting Message
         progressDialog.setMessage("Attempting to connect...");
-        // Progress Dialog Style Horizontal
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-        // Progress Dialog Max Value
-        progressDialog.setMax(100);
 
         progressDialog.show();
         progressDialog.setCancelable(false);
@@ -58,10 +53,7 @@ public class BluetoothConnectionService {
 
     public void startClient(BluetoothDevice device, UUID uuid){
         Log.d(TAG, "startClient: Started...");
-
         mConnectThread = new ConnectThread(device, uuid);
-        progressDialog.incrementProgressBy(10);
-        progressDialog.setMessage("Starting Connection");
         mConnectThread.start();
     }
 
@@ -103,15 +95,12 @@ public class BluetoothConnectionService {
                 // successful connection or an exception
                 mmSocket.connect();
                 Log.d(TAG, "run: ConnectThread connected.");
-                progressDialog.incrementProgressBy(50);
-                progressDialog.setMessage("Opening a Socket");
                 connected(mmSocket);
             } catch (IOException e) {
                 // Close the socket
                 try {
                     mmSocket.close();
                     Log.d(TAG, "run: Closed Socket.");
-                    progressDialog.setMessage("Couldn't Connect to the Car, try again");
                     try {
                         Thread.sleep(1000);
                         progressDialog.dismiss();
@@ -122,6 +111,7 @@ public class BluetoothConnectionService {
                     Log.e(TAG, "mConnectThread: run: Unable to close connection in socket " + e1.getMessage());
                 }
                 Log.d(TAG, "run: ConnectThread: Could not connect to UUID: " + MY_UUID_INSECURE );
+
             }
 
 
@@ -156,10 +146,9 @@ public class BluetoothConnectionService {
                 tmpIn = mmSocket.getInputStream();
                 tmpOut = mmSocket.getOutputStream();
                 Log.d(TAG,"temp sockets created successfully");
-                progressDialog.incrementProgressBy(40);
                 progressDialog.setMessage("Connected Successfully!");
-                mainActivity.startTheCar();
                 progressDialog.dismiss();
+                MainActivity.CONNECTED = true;
             } catch (IOException e) {
                 Log.e(TAG,"temp sockets not created", e);
             }
@@ -220,7 +209,7 @@ public class BluetoothConnectionService {
      * Write to the ConnectedThread in an unsynchronized manner
      */
     public void write(int mode) {
-        if(MainActivity.bluetoothConnectionService != null) {
+        if(MainActivity.BLUETOOTH_CONNECTION_SERVICE != null) {
             // Create temporary object
             byte[] out = ByteBuffer.allocate(4).putInt(mode).array();
             // Synchronize a copy of the ConnectedThread
@@ -231,7 +220,7 @@ public class BluetoothConnectionService {
     }
 
     public void write(String data){
-        if(MainActivity.bluetoothConnectionService != null) {
+        if(MainActivity.BLUETOOTH_CONNECTION_SERVICE != null) {
             byte[] out = data.getBytes();
             Log.d(TAG, "write: Writing to outputstream: " + data);
             mConnectedThread.write(out);
@@ -239,9 +228,9 @@ public class BluetoothConnectionService {
     }
 
     public void cancel(){
-        if( MainActivity.bluetoothConnectionService != null) {
+        if( MainActivity.BLUETOOTH_CONNECTION_SERVICE != null) {
             mConnectedThread.cancel();
-            mainActivity.stopTheCar();
+            MainActivity.CONNECTED =false;
         }
     }
 

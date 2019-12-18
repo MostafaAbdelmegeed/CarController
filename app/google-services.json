@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "987126273841-k30c44mbbtqrsqt3odlinjl5uk054mip.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.carcontroller_ver10",
+            "certificate_hash": "6a2dfddea0c7401ac0b35179aa01d03927d9f7b1"
+          }
+        },
+        {
           "client_id": "987126273841-olunnnffumtu9ffhr8jg0tdo9o3816lm.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
